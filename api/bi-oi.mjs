@@ -1,5 +1,5 @@
 import { Redis } from "@upstash/redis";
-import { fetchBybitKlines } from "../../functions/bybit/fetch-bybit-klines.mjs";
+
 import { fetchBinanceOi } from "../../functions/binance/fetch-binance-oi.mjs";
 
 export const config = {
