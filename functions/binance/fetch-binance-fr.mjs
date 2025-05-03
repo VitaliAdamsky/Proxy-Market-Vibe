@@ -30,7 +30,7 @@ export const fetchBinanceFr = async (coins, timeframe, limit) => {
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
-      const data = responseData.map((entry: any) => ({
+      const data = responseData.map((entry) => ({
         openTime: Number(entry.fundingTime),
         symbol: coin.symbol,
         fundingRate: Number(entry.fundingRate),
