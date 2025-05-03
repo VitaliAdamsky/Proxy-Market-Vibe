@@ -9,7 +9,7 @@ export const config = {
 
  import { calculatePriceDiff } from "../functions/utility/calculate-price-difference.mjs";
 
-export default async function handler(request: Request) {
+export default async function handler(request) {
   try {
     const redis = new Redis({
       url: process.env.KV_REST_API_URL,
