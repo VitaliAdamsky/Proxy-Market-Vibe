@@ -11,6 +11,7 @@ export const config = {
 
 export default async function handler(request) {
   try {
+    const timeframe = "h4";
     // 1. Get coins from Redis
     const redis = new Redis({
       url: process.env.KV_REST_API_URL,
@@ -27,8 +28,8 @@ export default async function handler(request) {
 
     // 3. Fetch data
     const [perps, spot] = await Promise.all([
-      fetchBinancePerpKlines(binanceCoins, "h1", 4),
-      fetchBinanceSpotKlines(binanceCoins, "h1", 4),
+      fetchBinancePerpKlines(binanceCoins, timeframe, 4),
+      fetchBinanceSpotKlines(binanceCoins, timeframe, 4),
     ]);
 
     // 4. Merge data
@@ -54,21 +55,25 @@ export default async function handler(request) {
 
 // Simple merge logic
 function mergeData(perps, spot) {
-  const spotMap = {};
+  // 1. Create spot price map: { [symbol]: { [openTime]: closePrice } }
+  const spotMap = spot.reduce((acc, { symbol, data }) => {
+    acc[symbol] = data.reduce((symbolAcc, entry) => {
+      symbolAcc[entry.openTime] = entry.closePrice;
+      return symbolAcc;
+    }, {});
+    return acc;
+  }, {});
 
-  // Build spot map
-  for (const entry of spot) {
-    const key = `${entry[0]}`; // openTime
-    spotMap[key] = parseFloat(entry[4]); // closePrice
-  }
-
-  // Merge perps
-  return perps.map((p) => ({
-    openTime: p[0],
-    perpClosePrice: parseFloat(p[4]),
-    spotClosePrice: spotMap[p[0]] || null,
-    diff: spotMap[p[0]]
-      ? (((parseFloat(p[4]) - spotMap[p[0]]) / spotMap[p[0]]) * 100).toFixed(2)
-      : null,
+  // 2. Merge perps with spot prices
+  return perps.map(({ symbol, data }) => ({
+    symbol,
+    data: data.map((perpEntry) => {
+      const spotClose = spotMap[symbol]?.[perpEntry.openTime] || null;
+      return {
+        ...perpEntry,
+        spotClosePrice: spotClose,
+        perpSpotDiff: calculatePriceDiff(perpEntry.closePrice, spotClose),
+      };
+    }),
   }));
 }
