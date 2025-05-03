@@ -44,21 +44,24 @@ export const fetchBinancePerpKlines = async (coins, timeframe, limit) => {
             : 0;
 
         // Delta volume calculation (buyer USDT - seller USDT)
-        const sellerQuoteVolume = totalQuoteVolume - takerBuyQuote;
+        const sellerQuoteVolume = (totalQuoteVolume - takerBuyQuote).toFixed(2);
         const volumeDelta = (takerBuyQuote - sellerQuoteVolume).toFixed(2);
 
         return {
           symbol: coin.symbol,
+          exchanges: coin.exchanges,
+          imageUrl: coin.imageUrl,
+          category: coin.category,
           openTime: parseFloat(entry[0]),
           closeTime: parseFloat(entry[6]),
           openPrice: parseFloat(entry[1]),
           highPrice: parseFloat(entry[2]),
           lowPrice: parseFloat(entry[3]),
           closePrice: parseFloat(entry[4]),
-          baseVolume: baseVolume,
-          quoteVolume: totalQuoteVolume.toFixed(2),
-          buyerRatio: buyerRatio, // Added: 51.09 (example)
-          volumeDelta: volumeDelta,
+          baseVolume: parseFloat(baseVolume),
+          quoteVolume: parseFloat(totalQuoteVolume),
+          buyerRatio: parseFloat(buyerRatio),
+          volumeDelta: parseFloat(volumeDelta),
         };
       });
 

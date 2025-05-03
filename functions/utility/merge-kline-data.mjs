@@ -1,4 +1,4 @@
-function mergeKlineData(perps, spot) {
+export function mergeKlineData(perps, spot) {
   // 1. Create spot price map
   const spotMap = spot.reduce((acc, { symbol, data }) => {
     acc[symbol] = data.reduce((symbolAcc, entry) => {
@@ -8,46 +8,53 @@ function mergeKlineData(perps, spot) {
     return acc;
   }, {});
 
-  // 2. Process perps with historical comparisons
+  // 2. Process all perps regardless of spot presence
   return perps.map(({ symbol, data }) => {
     let prevPerpEntry = null;
+    const symbolSpotData = spotMap[symbol] || {};
 
     const processedData = data.map((currentPerp) => {
-      // Compare with previous PERP entry
+      // Always calculate PERP-PERP changes
       const changes = {
-        quoteVolumeChange: prevPerpEntry
-          ? calcChange(currentPerp.quoteVolume, prevPerpEntry.quoteVolume)
-          : null,
-
-        deltaVolumeChange:
-          currentPerp.deltaVolume && prevPerpEntry
-            ? calcChange(currentPerp.deltaVolume, prevPerpEntry.deltaVolume)
-            : null,
-
-        closePriceChange: prevPerpEntry
-          ? calcChange(currentPerp.closePrice, prevPerpEntry.closePrice)
-          : null,
+        quoteVolumeChange: calcChange(
+          currentPerp.quoteVolume,
+          prevPerpEntry?.quoteVolume
+        ),
+        volumeDeltaChange: calcChange(
+          currentPerp.volumeDelta,
+          prevPerpEntry?.volumeDelta
+        ),
+        closePriceChange: calcChange(
+          currentPerp.closePrice,
+          prevPerpEntry?.closePrice
+        ),
       };
 
-      // Store current as previous for next iteration
-      prevPerpEntry = currentPerp;
+      // Add spot data if available
+      const spotClosePrice = symbolSpotData[currentPerp.openTime];
+      const spotMetrics = spotClosePrice
+        ? {
+            spotClosePrice,
+            perpSpotDiff: calcChange(currentPerp.closePrice, spotClosePrice),
+          }
+        : {};
+
+      prevPerpEntry = currentPerp; // Update for next iteration
 
       return {
         ...currentPerp,
         ...changes,
-        spotClosePrice: spotMap[symbol]?.[currentPerp.openTime] || null,
-        perpSpotDiff: calculatePriceDiff(
-          currentPerp.closePrice,
-          spotMap[symbol]?.[currentPerp.openTime]
-        ),
+        ...spotMetrics,
       };
     });
 
     return { symbol, data: processedData };
   });
 }
-// Helper: Safe percentage change calculation
+
+// Enhanced calculation helper
 function calcChange(current, previous) {
-  if (!previous || previous === 0) return null;
+  if (typeof previous !== "number" || previous === 0) return null;
+  if (typeof current !== "number") return null;
   return Number((((current - previous) / previous) * 100).toFixed(2));
 }
