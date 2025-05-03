@@ -4,7 +4,7 @@ export const config = {
   runtime: "edge", // Specifies Edge Function runtime
 };
 
-export default async function handler(request: Request) {
+export default async function handler(request) {
   // Handle non-GET requests
   if (request.method !== "GET") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
