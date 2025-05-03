@@ -34,7 +34,7 @@ export default async function handler(request) {
     // 4. Merge data
     const merged = mergeData(perps, spot);
 
-    return new Response(JSON.stringify(merged), {
+    return new Response(JSON.stringify([...spot, ...perps]), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
