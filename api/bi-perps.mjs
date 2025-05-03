@@ -7,10 +7,7 @@ export const config = {
   regions: ["arn1"],
 };
 
-const calculatePriceDiff = (perpPrice: number, spotPrice: number): number | null => {
-  if (!perpPrice || !spotPrice || spotPrice === 0) return null;
-  return Number(((perpPrice - spotPrice) / spotPrice * 100).toFixed(2));
-};
+ import { calculatePriceDiff } from "../functions/utility/calculate-price-difference.mjs";
 
 export default async function handler(request: Request) {
   try {
