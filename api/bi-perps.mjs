@@ -1,5 +1,5 @@
 // api/fetch-klines.mjs
-import { Redis } from "@upstash/redis/with-fetch";
+import { Redis } from "@upstash/redis";
 import { fetchBinancePerpKlines } from "../functions/binance/fetch-binance-perp-klines.mjs";
 import { fetchBinanceSpotKlines } from "../functions/binance/fetch-binance-spot-klines.mjs";
 import { calculatePriceDiff } from "../functions/utility/calculate-price-difference.mjs";
