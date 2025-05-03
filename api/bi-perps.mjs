@@ -31,7 +31,8 @@ export default async function handler(request: Request) {
       .map(c => ({
         symbol: c.symbol,
         category: c.category || "unknown",
-        imageUrl: c.imageUrl || "assets/img/noname.png"
+        imageUrl: c.imageUrl || "assets/img/noname.png",
+        exchanges: c.exchanges || []
       }));
 
     // Fetch parallel data
