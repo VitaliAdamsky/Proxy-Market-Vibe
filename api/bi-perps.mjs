@@ -2,7 +2,7 @@
 import { Redis } from "@upstash/redis";
 import { fetchBinancePerpKlines } from "../functions/binance/fetch-binance-perp-klines.mjs";
 import { fetchBinanceSpotKlines } from "../functions/binance/fetch-binance-spot-klines.mjs";
-import { calculatePriceDiff } from "../functions/utility/calculate-price-difference.mjs";
+import { mergeKlineData } from "../functions/utility/merge-kline-data.mjs";
 
 export const config = {
   runtime: "edge",
@@ -12,6 +12,7 @@ export const config = {
 export default async function handler(request) {
   try {
     const timeframe = "h4";
+    const limit = 4;
     // 1. Get coins from Redis
     const redis = new Redis({
       url: process.env.KV_REST_API_URL,
@@ -28,12 +29,12 @@ export default async function handler(request) {
 
     // 3. Fetch data
     const [perps, spot] = await Promise.all([
-      fetchBinancePerpKlines(binanceCoins, timeframe, 4),
-      fetchBinanceSpotKlines(binanceCoins, timeframe, 4),
+      fetchBinancePerpKlines(binanceCoins, timeframe, limit),
+      fetchBinanceSpotKlines(binanceCoins, timeframe, limit),
     ]);
 
     // 4. Merge data
-    const merged = mergeData(perps, spot);
+    const merged = mergeKlineData(perps, spot);
 
     return new Response(JSON.stringify([...merged]), {
       status: 200,
@@ -51,29 +52,4 @@ export default async function handler(request) {
       { status: 500 }
     );
   }
-}
-
-// Simple merge logic
-function mergeData(perps, spot) {
-  // 1. Create spot price map: { [symbol]: { [openTime]: closePrice } }
-  const spotMap = spot.reduce((acc, { symbol, data }) => {
-    acc[symbol] = data.reduce((symbolAcc, entry) => {
-      symbolAcc[entry.openTime] = entry.closePrice;
-      return symbolAcc;
-    }, {});
-    return acc;
-  }, {});
-
-  // 2. Merge perps with spot prices
-  return perps.map(({ symbol, data }) => ({
-    symbol,
-    data: data.map((perpEntry) => {
-      const spotClose = spotMap[symbol]?.[perpEntry.openTime] || null;
-      return {
-        ...perpEntry,
-        spotClosePrice: spotClose,
-        perpSpotDiff: calculatePriceDiff(perpEntry.closePrice, spotClose),
-      };
-    }),
-  }));
 }
