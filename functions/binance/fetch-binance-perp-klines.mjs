@@ -30,20 +30,40 @@ export const fetchBinancePerpKlines = async (coins, timeframe, limit) => {
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
-      const data = responseData.map((entry) => ({
-        symbol: coin.symbol,
-        openTime: parseFloat(entry[0]),
-        closeTime: parseFloat(entry[6]),
-        openPrice: parseFloat(entry[1]),
-        highPrice: parseFloat(entry[2]),
-        lowPrice: parseFloat(entry[3]),
-        closePrice: parseFloat(entry[4]),
-        baseVolume: parseFloat(entry[5]),
-        quoteVolume: parseFloat(entry[7]),
-        category: coin.category || "unknown",
-        exchanges: coin.exchanges || [],
-        imageUrl: coin.imageUrl || "assets/img/noname.png",
-      }));
+      const data = responseData.map((entry) => {
+        // Calculate buyer ratio and delta volume
+        const baseVolume = parseFloat(entry[5]);
+        const takerBuyBase = parseFloat(entry[9]);
+        const takerBuyQuote = parseFloat(entry[10]);
+        const totalQuoteVolume = parseFloat(entry[7]);
+
+        // Buyer ratio calculation (taker buys vs total volume)
+        const buyerRatio =
+          baseVolume > 0
+            ? Math.round((takerBuyBase / baseVolume) * 100 * 100) / 100 // Rounds to 2 decimals
+            : 0;
+
+        // Delta volume calculation (buyer USDT - seller USDT)
+        const sellerQuoteVolume = totalQuoteVolume - takerBuyQuote;
+        const deltaVolume = takerBuyQuote - sellerQuoteVolume;
+
+        return {
+          symbol: coin.symbol,
+          openTime: parseFloat(entry[0]),
+          closeTime: parseFloat(entry[6]),
+          openPrice: parseFloat(entry[1]),
+          highPrice: parseFloat(entry[2]),
+          lowPrice: parseFloat(entry[3]),
+          closePrice: parseFloat(entry[4]),
+          baseVolume: baseVolume,
+          quoteVolume: totalQuoteVolume,
+          buyerRatio: buyerRatio, // Added: 51.09 (example)
+          deltaVolume: deltaVolume, // Added: 33818541.92 - (66195482.54 - 33818541.92) = 1.416?
+          category: coin.category || "unknown",
+          exchanges: coin.exchanges || [],
+          imageUrl: coin.imageUrl || "assets/img/noname.png",
+        };
+      });
 
       return { symbol: coin.symbol, data };
     } catch (error) {

@@ -16,3 +16,67 @@ kix1	ap-northeast-3	Osaka, Japan
 pdx1	us-west-2	Portland, USA
 sfo1	us-west-1	San Francisco, USA
 syd1	ap-southeast-2	Sydney, Australia
+
+
+1. Why 1H Alone Isn’t Enough
+Funding Rate Cycles: Binance applies funding rates every 8 hours (~3x per day), which aligns more closely with the 4H timeframe than 1H. Divergences often resolve around these intervals.
+
+False Signals: A 1H divergence might reverse quickly due to noise (e.g., whale orders, liquidity gaps). Higher timeframes filter out short-term noise.
+
+Trend Context: A 1H divergence could be part of a larger trend visible on 4H or daily charts. For example:
+
+A daily bullish trend might sustain a perps premium for days despite 1H dips.
+
+A 4H bearish reversal could invalidate a 1H divergence signal.
+
+2. Strategic Use of Timeframes
+Timeframe	Purpose	Example
+1H	Short-term entry/exit signals	Spotting intraday arbitrage opportunities during funding rate windows.
+4H	Align with funding rate cycles (every 8H)	Confirming if a 1H divergence aligns with upcoming funding rate pressure.
+Daily	Identify structural trends or macro bias	Sustained perps premium during a bull market, overriding short-term noise.
+3. Practical Workflow
+Daily Chart:
+
+Check if the divergence aligns with the broader trend (e.g., perps premium in a bull market).
+
+Look for extreme funding rates (e.g., >0.1% per 8H) that suggest unsustainable gaps.
+
+4H Chart:
+
+Monitor divergences near funding rate timestamps (00:00, 08:00, 16:00 UTC on Binance).
+
+Use RSI or volume to confirm if the divergence has momentum to persist.
+
+1H Chart:
+
+Refine entry/exit points for trades (e.g., short perps when 1H shows overextension).
+
+Watch for sudden reversals (e.g., liquidation cascades invalidating the divergence).
+
+4. When 1H Analysis Works Best
+Scalping: Exploit small gaps during high volatility (e.g., news events).
+
+Funding Rate Arbitrage: Trade ahead of scheduled funding windows (8H cycles).
+
+Liquidity Zones: Pair 1H divergences with orderbook liquidity clusters (e.g., perps dipping into a spot support level).
+
+5. Risks of Ignoring Higher Timeframes
+False Positives: A 1H divergence might reverse before the funding rate applies (e.g., gap closes in 2H).
+
+Missed Trends: A multi-day perps premium (visible on daily charts) could lead to missed swing trades.
+
+Overleveraging: Chasing 1H signals without 4H/daily confirmation increases liquidation risk.
+
+Tools to Combine Timeframes
+TradingView Alerts: Set multi-timeframe alerts for divergences (e.g., 1H + 4H).
+
+Funding Rate Trackers: Use CoinGlass to monitor real-time funding rates alongside price charts.
+
+Heatmaps: Analyze open interest changes across timeframes to confirm divergence strength.
+
+Key Takeaway
+While 1H analysis is useful for timing trades, always cross-verify with 4H funding cycles and daily trends to avoid false signals and align with market structure. For example:
+
+A 1H perps premium during a daily bear market is likely to reverse faster than one in a bull trend.
+
+A 4H divergence aligning with a funding window has higher convergence probability.

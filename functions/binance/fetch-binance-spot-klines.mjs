@@ -33,16 +33,16 @@ export const fetchBinanceSpotKlines = async (coins, timeframe, limit) => {
       const data = responseData.map((entry) => ({
         symbol: coin.symbol,
         openTime: parseFloat(entry[0]),
-        closeTime: parseFloat(entry[6]),
-        openPrice: parseFloat(entry[1]),
-        highPrice: parseFloat(entry[2]),
-        lowPrice: parseFloat(entry[3]),
         closePrice: parseFloat(entry[4]),
-        baseVolume: parseFloat(entry[5]),
-        quoteVolume: parseFloat(entry[7]),
-        category: coin.category || "unknown",
-        exchanges: coin.exchanges || [],
-        imageUrl: coin.imageUrl || "assets/img/noname.png",
+        // closeTime: parseFloat(entry[6]),
+        // openPrice: parseFloat(entry[1]),
+        // highPrice: parseFloat(entry[2]),
+        // lowPrice: parseFloat(entry[3]),
+        // baseVolume: parseFloat(entry[5]),
+        // quoteVolume: parseFloat(entry[7]),
+        // category: coin.category || "unknown",
+        // exchanges: coin.exchanges || [],
+        // imageUrl: coin.imageUrl || "assets/img/noname.png",
       }));
 
       return { symbol: coin.symbol, data };
