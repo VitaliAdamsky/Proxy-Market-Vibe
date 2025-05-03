@@ -82,7 +82,7 @@ export default async function handler(request) {
     return new Response(
       JSON.stringify({
         success: true,
-        data: mergedData.flat(),
+        data: mergedData,
         timestamp: Date.now(),
       }),
       {
