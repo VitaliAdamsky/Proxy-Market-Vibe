@@ -1,4 +1,4 @@
-function mergeData(perps, spot) {
+function mergeKlineData(perps, spot) {
   // 1. Create spot price map
   const spotMap = spot.reduce((acc, { symbol, data }) => {
     acc[symbol] = data.reduce((symbolAcc, entry) => {
@@ -13,14 +13,17 @@ function mergeData(perps, spot) {
     let prevPerpEntry = null;
 
     const processedData = data.map((currentPerp) => {
-      // Compare with previous PERP entry (not spot)
+      // Compare with previous PERP entry
       const changes = {
         quoteVolumeChange: prevPerpEntry
           ? calcChange(currentPerp.quoteVolume, prevPerpEntry.quoteVolume)
           : null,
-        deltaVolumeChange: prevPerpEntry
-          ? calcChange(currentPerp.deltaVolume, prevPerpEntry.deltaVolume)
-          : null,
+
+        deltaVolumeChange:
+          currentPerp.deltaVolume && prevPerpEntry
+            ? calcChange(currentPerp.deltaVolume, prevPerpEntry.deltaVolume)
+            : null,
+
         closePriceChange: prevPerpEntry
           ? calcChange(currentPerp.closePrice, prevPerpEntry.closePrice)
           : null,
@@ -43,7 +46,6 @@ function mergeData(perps, spot) {
     return { symbol, data: processedData };
   });
 }
-
 // Helper: Safe percentage change calculation
 function calcChange(current, previous) {
   if (!previous || previous === 0) return null;
