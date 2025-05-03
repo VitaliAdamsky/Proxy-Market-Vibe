@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
 
-import { fetchBinanceFr } from "../functions/binance/fetch-binance-fr";
+import { fetchBinanceFr } from "../functions/binance/fetch-binance-fr.mjs";
 
 export const config = {
   runtime: "edge",
