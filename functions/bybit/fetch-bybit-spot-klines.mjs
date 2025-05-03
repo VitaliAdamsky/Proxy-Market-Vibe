@@ -1,15 +1,15 @@
 import { getIntervalDurationMs } from "../get-interval-duration-ms.mjs";
-import { getBybitOiInterval } from "./get-bybit-oi-interval.mjs";
-import { bybitOiUrl } from "./bybit-oi-url.mjs";
+import { getBybitKlineInterval } from "./get-bybit-kline-interval.mjs";
+import { bybitSpotUrl } from "./bybit-spot-url.mjs";
 import { calculateCloseTime } from "../calculate-close-time.mjs";
 
-export const fetchBybitOi = async (coins, timeframe, limit) => {
+export const fetchBybitSpotKlines = async (coins, timeframe, limit) => {
   const intervalMs = getIntervalDurationMs(timeframe);
-  const bybitInterval = getBybitOiInterval(timeframe);
+  const bybitInterval = getBybitKlineInterval(timeframe);
 
   const promises = coins.map(async (coin) => {
     try {
-      const url = bybitOiUrl(coin.symbol, bybitInterval, limit);
+      const url = bybitSpotUrl(coin.symbol, bybitInterval, limit);
 
       const response = await fetch(url);
       const responseData = await response.json();
@@ -23,15 +23,17 @@ export const fetchBybitOi = async (coins, timeframe, limit) => {
       }
 
       const rawEntries = responseData.result.list;
-      const data = rawEntries.map((entry) => ({
-        symbol: coin.symbol,
-        openTime: Number(entry.timestamp),
-        openInterest: Number(entry.openInterest),
-        // closeTime: calculateCloseTime(entry.timestamp, intervalMs), // Make sure intervalMs is correct
-        // imageUrl: coin.imageUrl,
-        // category: coin.category || "unknown",
-        // exchanges: coin.exchanges || [],
-      }));
+      const data = [];
+
+      for (const entry of rawEntries) {
+        if (!Array.isArray(entry) || entry.length < 7) continue;
+
+        data.push({
+          symbol: coin.symbol,
+          openTime: Number(entry[0]),
+          closePrice: Number(entry[4]),
+        });
+      }
 
       return { symbol: coin.symbol, data };
     } catch (error) {

@@ -6,16 +6,22 @@ export const fetchBybitFr = async (coins, limit) => {
       const url = bybitFrUrl(coin.symbol, limit);
 
       const response = await fetch(url);
-      const data = await response.json();
+      const responseData = await response.json();
 
       // ✅ Fix: Correct response structure validation
-      if (!data?.result?.list || !Array.isArray(data.result.list)) {
-        console.error(`Invalid response structure for ${coin.symbol}:`, data);
+      if (
+        !responseData?.result?.list ||
+        !Array.isArray(responseData.result.list)
+      ) {
+        console.error(
+          `Invalid response structure for ${coin.symbol}:`,
+          responseData
+        );
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
       const rawEntries = data.result.list;
-      const klineData = rawEntries.map((entry) => ({
+      const data = rawEntries.map((entry) => ({
         openTime: Number(entry.fundingRateTimestamp),
         symbol: coin.symbol,
         imageUrl: coin.imageUrl,
@@ -25,10 +31,10 @@ export const fetchBybitFr = async (coins, limit) => {
       }));
       klineData.reverse();
       // klineData.pop();
-      return { symbol: coin.symbol, klineData };
+      return { symbol: coin.symbol, data };
     } catch (error) {
       console.error(`Error processing ${coin.symbol}:`, error);
-      return { symbol: coin.symbol, klineData: [] };
+      return { symbol: coin.symbol, data: [] };
     }
   });
 

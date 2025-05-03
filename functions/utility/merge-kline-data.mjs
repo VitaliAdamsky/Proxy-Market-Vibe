@@ -40,7 +40,9 @@ export function mergeKlineData(perps, spot) {
         : {};
 
       prevPerpEntry = currentPerp; // Update for next iteration
-
+      if (currentPerp.exchanges == ["Bybit"]) {
+        console.log(currentPerp);
+      }
       return {
         ...currentPerp,
         ...changes,

@@ -1,9 +1,9 @@
 // api/fetch-klines.mjs
 import { Redis } from "@upstash/redis";
-import { fetchBinancePerpKlines } from "../../functions/binance/fetch-binance-perp-klines.mjs";
-import { fetchBinanceSpotKlines } from "../../functions/binance/fetch-binance-spot-klines.mjs";
+import { fetchBybitPerpKlines } from "../../functions/bybit/fetch-bybit-perp-klines.mjs";
+import { fetchBybitSpotKlines } from "../../functions/bybit/fetch-bybit-spot-klines.mjs";
 import { mergeKlineData } from "../../functions/utility/merge-kline-data.mjs";
-import { noBinanceSpotData } from "../../functions/utility/no-binance-spot-data.mjs";
+import { noBybitSpotData } from "../../functions/utility/no-bybit-spot-data.mjs";
 
 export const config = {
   runtime: "edge",
@@ -24,20 +24,23 @@ export default async function handler(request) {
     const coins = Array.isArray(rawCoins) ? rawCoins : [];
 
     // 2. Filter Binance coins
-    const binancePerpCoins = coins.filter((c) =>
-      c?.exchanges?.includes?.("Binance")
+    const bybitPerpCoins = coins.filter(
+      (c) =>
+        c?.exchanges?.includes?.("Bybit") &&
+        !c?.exchanges?.includes?.("Binance")
     );
 
-    const binanceSpotCoins = coins.filter(
+    const bybitSpotCoins = coins.filter(
       (c) =>
-        c?.exchanges?.includes?.("Binance") &&
-        !noBinanceSpotData.includes(c.symbol)
+        c?.exchanges?.includes?.("Bybit") &&
+        !c?.exchanges?.includes?.("Binance") &&
+        !noBybitSpotData.includes(c.symbol)
     );
 
     // 3. Fetch data
     const [perps, spot] = await Promise.all([
-      fetchBinancePerpKlines(binancePerpCoins, timeframe, limit),
-      fetchBinanceSpotKlines(binanceSpotCoins, timeframe, limit),
+      fetchBybitPerpKlines(bybitPerpCoins, timeframe, limit),
+      fetchBybitSpotKlines(bybitSpotCoins, timeframe, limit),
     ]);
 
     // 4. Merge data
@@ -54,7 +57,7 @@ export default async function handler(request) {
     return new Response(
       JSON.stringify({
         error: "Server oopsie",
-        details: error.message,
+        details: error,
       }),
       { status: 500 }
     );
