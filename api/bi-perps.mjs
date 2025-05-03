@@ -39,7 +39,7 @@ export default async function handler(request) {
     ]);
 
     // Validate response structures
-    const isValidData = (data: any) => 
+    const isValidData = (data) => 
       Array.isArray(data) && data.every(coinData => Array.isArray(coinData));
     
     if (!isValidData(perpData) || !isValidData(spotData)) {
