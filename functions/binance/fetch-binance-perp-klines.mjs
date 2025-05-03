@@ -58,10 +58,7 @@ export const fetchBinancePerpKlines = async (coins, timeframe, limit) => {
           baseVolume: baseVolume,
           quoteVolume: totalQuoteVolume,
           buyerRatio: buyerRatio, // Added: 51.09 (example)
-          deltaVolume: deltaVolume, // Added: 33818541.92 - (66195482.54 - 33818541.92) = 1.416?
-          category: coin.category || "unknown",
-          exchanges: coin.exchanges || [],
-          imageUrl: coin.imageUrl || "assets/img/noname.png",
+          deltaVolume: deltaVolume,
         };
       });
 

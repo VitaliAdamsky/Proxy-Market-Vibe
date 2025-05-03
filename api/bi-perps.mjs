@@ -69,7 +69,8 @@ export default async function handler(request: Request) {
           spotClosePrice: spotClose,
           perpSpotDiff: calculatePriceDiff(perpEntry.closePrice, spotClose),
           category: binanceCoins.find(c => c.symbol === perpEntry.symbol)?.category,
-          imageUrl: binanceCoins.find(c => c.symbol === perpEntry.symbol)?.imageUrl
+          imageUrl: binanceCoins.find(c => c.symbol === perpEntry.symbol)?.imageUrl,
+          exchanges: binanceCoins.find(c => c.symbol === perpEntry.symbol)?.exchanges
         };
       });
     });
