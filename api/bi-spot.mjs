@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
 
-import { fetchBinanceSpotKlines } from "../../functions/binance/fetch-binance-spot-klines.mjs";
+import { fetchBinanceSpotKlines } from "../functions/binance/fetch-binance-spot-klines.mjs";
 
 export const config = {
   runtime: "edge",
