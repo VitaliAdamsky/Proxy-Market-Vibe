@@ -21,17 +21,14 @@ export default async function handler(request) {
     const coins = Array.isArray(rawCoins) ? rawCoins : [];
 
     // 2. Filter Binance coins
-    const binanceCoins = coins
-      .filter((c) => c?.exchanges?.includes?.("Binance"))
-      .map((c) => ({
-        symbol: c.symbol || "unknown",
-        image: c.imageUrl || "default.png",
-      }));
+    const binanceCoins = coins.filter((c) =>
+      c?.exchanges?.includes?.("Binance")
+    );
 
     // 3. Fetch data
     const [perps, spot] = await Promise.all([
-      fetchBinancePerpKlines(binanceCoins),
-      fetchBinanceSpotKlines(binanceCoins),
+      fetchBinancePerpKlines(binanceCoins, "h1", 4),
+      fetchBinanceSpotKlines(binanceCoins, "h1", 4),
     ]);
 
     // 4. Merge data
@@ -67,9 +64,9 @@ function mergeData(perps, spot) {
 
   // Merge perps
   return perps.map((p) => ({
-    time: p[0],
-    perpPrice: parseFloat(p[4]),
-    spotPrice: spotMap[p[0]] || null,
+    openTime: p[0],
+    perpClosePrice: parseFloat(p[4]),
+    spotClosePrice: spotMap[p[0]] || null,
     diff: spotMap[p[0]]
       ? (((parseFloat(p[4]) - spotMap[p[0]]) / spotMap[p[0]]) * 100).toFixed(2)
       : null,
