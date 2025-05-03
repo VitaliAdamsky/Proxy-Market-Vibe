@@ -36,7 +36,7 @@ export default async function handler(request) {
     const binanceCoins = coins.filter((c) => c.exchanges.includes("Binance"));
 
     const [binanceKlines] = await Promise.all([
-      fetchBinanceFr(binanceCoins, timeframe, limit),
+      fetchBinanceFr(binanceCoins, limit),
     ]);
 
     return new Response(JSON.stringify({ klines1h: [...binanceKlines] }), {

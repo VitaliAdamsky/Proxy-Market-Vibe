@@ -1,9 +1,6 @@
-import { getBinanceKlineInterval } from "./get-binance-kline-interval.mjs";
 import { binanceFrUrl } from "./binance-fr-url.mjs";
 
-export const fetchBinanceFr = async (coins, timeframe, limit) => {
-  const binanceInterval = getBinanceKlineInterval(timeframe);
-
+export const fetchBinanceFr = async (coins, limit) => {
   const promises = coins.map(async (coin) => {
     try {
       // Configure headers for Binance
@@ -17,7 +14,7 @@ export const fetchBinanceFr = async (coins, timeframe, limit) => {
       headers.set("Origin", "https://www.binance.com");
       headers.set("Referer", "https://www.binance.com/");
 
-      const url = binanceFrUrl(coin.symbol, binanceInterval, limit);
+      const url = binanceFrUrl(coin.symbol, limit);
 
       const response = await fetch(url, { headers });
       const responseData = await response.json();
