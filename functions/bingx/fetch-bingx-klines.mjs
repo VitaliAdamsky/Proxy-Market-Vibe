@@ -12,23 +12,23 @@ export const fetchBingXKlines = async (coins, timeframe, limit) => {
       const url = bingxPerpUrl(coin.symbol, bingXInterval, limit);
 
       const response = await fetch(url);
-      const data = await response.json();
+      const responseData = await response.json();
 
       // ✅ Fix: Check for correct response structure
-      if (!data?.data || !Array.isArray(data.data)) {
+      if (!responseData?.data || !Array.isArray(responseData.data)) {
         console.error(`Invalid response structure for ${coin.symbol}:`, data);
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
       // ✅ Fix: Iterate over data.data directly (not data.data[0])
-      const klineData = data.data.map((entry) => ({
+      const data = responseData.data.map((entry) => ({
         openTime: Number(entry.time),
         closeTime: calculateCloseTime(Number(entry.time), intervalMs),
         symbol: coin.symbol,
         category: coin.category || "unknown",
         exchanges: coin.exchanges || [],
-        openPrice: Number(entry.open),
         imageUrl: coin.imageUrl || "assets/img/noname.png",
+        openPrice: Number(entry.open),
         highPrice: Number(entry.high),
         lowPrice: Number(entry.low),
         closePrice: Number(entry.close),
@@ -39,10 +39,10 @@ export const fetchBingXKlines = async (coins, timeframe, limit) => {
       klineData.reverse();
       klineData.pop();
 
-      return { symbol: coin.symbol, klineData };
+      return { symbol: coin.symbol, data };
     } catch (error) {
       console.error(`Error processing ${coin.symbol}:`, error);
-      return { symbol: coin.symbol, klineData: [] };
+      return { symbol: coin.symbol, data: [] };
     }
   });
 

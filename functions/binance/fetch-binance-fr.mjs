@@ -27,11 +27,54 @@ export const fetchBinanceFr = async (coins, limit) => {
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
-      const data = responseData.map((entry) => ({
-        openTime: Number(entry.fundingTime),
-        symbol: coin.symbol,
-        fundingRate: Number(entry.fundingRate),
-      }));
+      // Extract ALL needed fields and sort
+      const rawEntries = responseData
+        .map((entry) => ({
+          fundingTime: Number(entry.fundingTime),
+          fundingRate: Number(entry.fundingRate),
+        }))
+        .sort((a, b) => a.fundingTime - b.fundingTime);
+
+      const data = rawEntries.map((entry, index, arr) => {
+        const currentOpenTime = entry.fundingTime;
+        const currentRate = entry.fundingRate;
+
+        // Calculate interval
+        const interval =
+          index > 0
+            ? currentOpenTime - arr[index - 1].fundingTime
+            : 8 * 3600 * 1000;
+
+        const closeTime = currentOpenTime + interval - 1;
+
+        // Validate
+        if (closeTime <= currentOpenTime) {
+          throw new Error(`Invalid timestamps for ${coin.symbol}`);
+        }
+
+        // Calculate safe rate change
+        let fundingRateChange = null;
+        if (index > 0) {
+          const prevRate = arr[index - 1].fundingRate;
+          fundingRateChange =
+            prevRate !== 0
+              ? Number(
+                  (((currentRate - prevRate) / Math.abs(prevRate)) * 100) // Fixed parentheses
+                    .toFixed(2)
+                )
+              : currentRate !== 0
+              ? Number((currentRate * 100).toFixed(2)) // Handle zero denominator case
+              : 0; // Both rates are zero = 0% change
+        }
+
+        return {
+          openTime: currentOpenTime,
+          closeTime,
+          symbol: coin.symbol,
+          fundingRate: currentRate,
+          fundingRateChange,
+        };
+      });
 
       return { symbol: coin.symbol, data };
     } catch (error) {

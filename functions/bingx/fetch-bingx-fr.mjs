@@ -5,26 +5,62 @@ export const fetchBingXFr = async (coins, limit) => {
     try {
       const url = bingXFrUrl(coin.symbol, limit);
       const response = await fetch(url);
-      const data = await response.json();
+      const responseData = await response.json();
 
-      if (!data?.data || !Array.isArray(data.data)) {
-        console.error(`Invalid response structure for ${coin.symbol}:`, data);
-        throw new Error(`Invalid response structure for ${coin.symbol}`);
+      if (!responseData?.data || !Array.isArray(responseData.data)) {
+        console.error(`Invalid response for ${coin.symbol}:`, responseData);
+        throw new Error(`Invalid response for ${coin.symbol}`);
       }
 
-      const klineData = data.data.map((entry) => ({
-        openTime: Number(entry.fundingTime),
-        symbol: coin.symbol,
-        imageUrl: coin.imageUrl,
-        category: coin.category || "unknown",
-        exchanges: coin.exchanges || [],
-        fundingRate: Number(entry.fundingRate),
-      }));
+      // Sort entries chronologically
+      const rawEntries = responseData.data
+        .map((entry) => ({
+          ...entry,
+          fundingTime: Number(entry.fundingTime),
+        }))
+        .sort((a, b) => a.fundingTime - b.fundingTime);
 
-      return { symbol: coin.symbol, klineData };
+      // Calculate actual interval from data
+      const baseInterval =
+        rawEntries.length >= 2
+          ? rawEntries[1].fundingTime - rawEntries[0].fundingTime
+          : 8 * 3600 * 1000;
+
+      const data = rawEntries.map((entry, index, arr) => {
+        const currentOpenTime = entry.fundingTime;
+        const currentRate = Number(entry.fundingRate);
+
+        // Calculate closeTime using consistent interval
+        const closeTime = currentOpenTime + baseInterval - 1;
+
+        // Validate time sequence
+        if (closeTime <= currentOpenTime) {
+          throw new Error(
+            `Invalid closeTime for ${coin.symbol} at ${currentOpenTime}`
+          );
+        }
+
+        // Calculate rate change from next entry (chronological order)
+        const fundingRateChange =
+          index < arr.length - 1
+            ? ((arr[index + 1].fundingRate - currentRate) /
+                Math.abs(currentRate)) *
+              100
+            : null;
+
+        return {
+          openTime: currentOpenTime,
+          closeTime,
+          symbol: coin.symbol,
+          fundingRate: currentRate,
+          fundingRateChange,
+        };
+      });
+
+      return { symbol: coin.symbol, data };
     } catch (error) {
       console.error(`Error processing ${coin.symbol}:`, error);
-      return { symbol: coin.symbol, klineData: [] };
+      return { symbol: coin.symbol, data: [] };
     }
   });
 

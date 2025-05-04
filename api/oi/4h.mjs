@@ -2,7 +2,7 @@
 import { calculateOpenInterestChanges } from "../../functions/utility/calculate-oi-changes.mjs";
 import { fetchBinanceOi } from "../../functions/binance/fetch-binance-oi.mjs";
 import { fetchBybitOi } from "../../functions/bybit/fetch-bybit-oi.mjs";
-import { fetchCoins } from "../../functions/utility/fetch-coins.mjs";
+import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
 
 export const config = {
   runtime: "edge",
@@ -19,7 +19,7 @@ export default async function handler(request) {
       binanceSpotCoins,
       bybitPerpCoins,
       bybitSpotCoins,
-    } = await fetchCoins();
+    } = await fetchCoinsFromRedis();
 
     // Fetch and process data
     const [binancePerps, bybitPerps] = await Promise.all([

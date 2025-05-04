@@ -5,9 +5,13 @@ import { fetchBinanceSpotKlines } from "../../functions/binance/fetch-binance-sp
 import { fetchBybitPerpKlines } from "../../functions/bybit/fetch-bybit-perp-klines.mjs";
 import { fetchBybitSpotKlines } from "../../functions/bybit/fetch-bybit-spot-klines.mjs";
 import { mergeKlineData } from "../../functions/utility/merge-kline-data.mjs";
-import { noBinanceSpotData } from "../../functions/utility/no-binance-spot-data.mjs";
-import { noBybitSpotData } from "../../functions/utility/no-bybit-spot-data.mjs";
-import { fetchCoins } from "../../functions/utility/fetch-coins.mjs";
+import { fetchBinanceFr } from "../../functions/binance/fetch-binance-fr.mjs";
+import { fetchBybitFr } from "../../functions/bybit/fetch-bybit-fr.mjs";
+import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
+import { fetchBinanceOi } from "../../functions/binance/fetch-binance-oi.mjs";
+import { fetchBybitOi } from "../../functions/bybit/fetch-bybit-oi.mjs";
+import { addFrData } from "../../functions/basis/add-fr-data.mjs";
+import { addOiData } from "../../functions/basis/add-oi-data.mjs";
 
 export const config = {
   runtime: "edge",
@@ -17,31 +21,51 @@ export const config = {
 export default async function handler(request) {
   try {
     const timeframe = "h4";
-    const limit = 4;
+    const limitKline = 51;
+    const limitFr = 52;
 
     const {
       binancePerpCoins,
       binanceSpotCoins,
       bybitPerpCoins,
       bybitSpotCoins,
-    } = await fetchCoins();
+    } = await fetchCoinsFromRedis();
 
     // 3. Fetch all data in parallel
-    const [binancePerps, binanceSpot, bybitPerps, bybitSpot] =
-      await Promise.all([
-        fetchBinancePerpKlines(binancePerpCoins, timeframe, limit),
-        fetchBinanceSpotKlines(binanceSpotCoins, timeframe, limit),
-        fetchBybitPerpKlines(bybitPerpCoins, timeframe, limit),
-        fetchBybitSpotKlines(bybitSpotCoins, timeframe, limit),
-      ]);
+    const [
+      binancePerps,
+      binanceSpot,
+      bybitPerps,
+      bybitSpot,
+      binanceFr,
+      bybitFr,
+      binanceOi,
+      bybitOi,
+    ] = await Promise.all([
+      fetchBinancePerpKlines(binancePerpCoins, timeframe, limitKline),
+      fetchBinanceSpotKlines(binanceSpotCoins, timeframe, limitKline),
+      fetchBybitPerpKlines(bybitPerpCoins, timeframe, limitKline),
+      fetchBybitSpotKlines(bybitSpotCoins, timeframe, limitKline),
+      fetchBinanceFr(binancePerpCoins, limitFr),
+      fetchBybitFr(bybitPerpCoins, limitFr),
+      fetchBinanceOi(binancePerpCoins, timeframe, limitKline),
+      fetchBybitOi(bybitPerpCoins, timeframe, limitKline),
+    ]);
 
     // 4. Merge data
-    const merged = mergeKlineData(
+
+    const mergedKlines = mergeKlineData(
       [...binancePerps, ...bybitPerps],
       [...binanceSpot, ...bybitSpot]
     );
+    const mergedFr = [...binanceFr, ...bybitFr];
+    const mergedOi = [...binanceOi, ...bybitOi];
 
-    return new Response(JSON.stringify(merged), {
+    let processed;
+    processed = addFrData(mergedKlines, mergedFr);
+    processed = addOiData(processed, mergedOi);
+
+    return new Response(JSON.stringify(processed), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
