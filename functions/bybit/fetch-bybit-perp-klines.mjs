@@ -1,7 +1,7 @@
-import { getIntervalDurationMs } from "../get-interval-duration-ms.mjs";
+import { getIntervalDurationMs } from "../utility/get-interval-duration-ms.mjs";
 import { getBybitKlineInterval } from "./get-bybit-kline-interval.mjs";
 import { bybitPerpUrl } from "./bybit-perps-url.mjs";
-import { calculateCloseTime } from "../calculate-close-time.mjs";
+import { calculateCloseTime } from "../utility/calculate-close-time.mjs";
 
 export const fetchBybitPerpKlines = async (coins, timeframe, limit) => {
   const intervalMs = getIntervalDurationMs(timeframe);

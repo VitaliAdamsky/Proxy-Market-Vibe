@@ -1,7 +1,7 @@
-import { getIntervalDurationMs } from "../get-interval-duration-ms.mjs";
+import { getIntervalDurationMs } from "../utility/get-interval-duration-ms.mjs";
 import { getBybitOiInterval } from "./get-bybit-oi-interval.mjs";
 import { bybitOiUrl } from "./bybit-oi-url.mjs";
-import { calculateCloseTime } from "../calculate-close-time.mjs";
+import { calculateCloseTime } from "../utility/calculate-close-time.mjs";
 
 export const fetchBybitOi = async (coins, timeframe, limit) => {
   const intervalMs = getIntervalDurationMs(timeframe);

@@ -1,6 +1,6 @@
-import { getIntervalDurationMs } from "../get-interval-duration-ms.mjs";
+import { getIntervalDurationMs } from "../utility/get-interval-duration-ms.mjs";
 import { bingxPerpUrl } from "./bingx-perps-url";
-import { calculateCloseTime } from "../calculate-close-time.mjs";
+import { calculateCloseTime } from "../utility/calculate-close-time.mjs";
 import { getBingXKlineInterval } from "./get-bingx-kline-interval.mjs";
 
 export const fetchBingXKlines = async (coins, timeframe, limit) => {
