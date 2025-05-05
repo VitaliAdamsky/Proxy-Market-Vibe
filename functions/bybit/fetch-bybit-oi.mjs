@@ -20,30 +20,40 @@ export const fetchBybitOi = async (coins, timeframe, limit) => {
       }
 
       const rawEntries = responseData.result.list;
-      const data = rawEntries.map((entry, index, arr) => {
-        const currentOI = Number(entry.openInterest);
+      const data = rawEntries
+        .sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
+        .map((entry, index, arr) => {
+          const currentValue = Number(entry.openInterest);
 
-        // Calculate OI change from previous entry
-        const openInterestChange =
-          index > 0
-            ? Number(
-                (
-                  ((currentOI - Number(arr[index - 1].openInterest)) /
-                    Math.abs(Number(arr[index - 1].openInterest))) *
-                  100
-                ).toFixed(2)
-              )
-            : null;
+          // Calculate OI change from previous entry
+          const openInterestChange =
+            index > 0
+              ? Number(
+                  (
+                    ((currentValue - Number(arr[index - 1].openInterest)) /
+                      Math.abs(Number(arr[index - 1].openInterest))) *
+                    100
+                  ).toFixed(2)
+                )
+              : null;
 
-        return {
-          symbol: coin.symbol,
-          openTime: Number(entry.timestamp),
-          openInterest: currentOI,
-          openInterestChange,
-        };
-      });
+          return {
+            symbol: coin.symbol,
+            openTime: Number(entry.timestamp),
+            openInterest: Number(currentValue.toFixed(2)),
+            openInterestChange,
+          };
+        });
 
-      return { symbol: coin.symbol, data };
+      const cleanedData = data.slice(1, -1);
+
+      return {
+        symbol: coin.symbol,
+        exchanges: coin.exchanges,
+        imageUrl: coin.imageUrl,
+        category: coin.category,
+        data: cleanedData,
+      };
     } catch (error) {
       console.error(`Error processing ${coin.symbol}:`, error);
       return { symbol: coin.symbol, data: [] };

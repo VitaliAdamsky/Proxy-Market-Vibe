@@ -14,12 +14,7 @@ export default async function handler(request) {
   const timeframe = "h4";
   const limit = 4;
   try {
-    const {
-      binancePerpCoins,
-      binanceSpotCoins,
-      bybitPerpCoins,
-      bybitSpotCoins,
-    } = await fetchCoinsFromRedis();
+    const { binancePerpCoins, bybitPerpCoins } = await fetchCoinsFromRedis();
 
     // Fetch and process data
     const [binancePerps, bybitPerps] = await Promise.all([
@@ -27,9 +22,7 @@ export default async function handler(request) {
       fetchBybitOi(bybitPerpCoins, timeframe, limit),
     ]);
 
-    const data = calculateOpenInterestChanges([...binancePerps, ...bybitPerps]);
-
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify([...binancePerps, ...bybitPerps]), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

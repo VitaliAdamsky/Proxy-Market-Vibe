@@ -30,31 +30,39 @@ export const fetchBinanceOi = async (coins, timeframe, limit) => {
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
-      const data = responseData.map((entry, index, arr) => {
-        const currentValue = Number(entry.sumOpenInterestValue);
+      const data = responseData
+        .sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
+        .map((entry, index, arr) => {
+          const currentValue = Number(entry.sumOpenInterestValue);
 
-        // Calculate open interest change
-        const openInterestChange =
-          index > 0
-            ? Number(
-                (
-                  ((currentValue -
-                    Number(arr[index - 1].sumOpenInterestValue)) /
-                    Math.abs(Number(arr[index - 1].sumOpenInterestValue))) *
-                  100
-                ).toFixed(2)
-              )
-            : null;
+          // Calculate open interest change
+          const openInterestChange =
+            index > 0
+              ? Number(
+                  (
+                    ((currentValue -
+                      Number(arr[index - 1].sumOpenInterestValue)) /
+                      Math.abs(Number(arr[index - 1].sumOpenInterestValue))) *
+                    100
+                  ).toFixed(2)
+                )
+              : null;
 
-        return {
-          openTime: Number(entry.timestamp),
-          symbol: coin.symbol,
-          openInterest: currentValue,
-          openInterestChange,
-        };
-      });
-
-      return { symbol: coin.symbol, data };
+          return {
+            openTime: Number(entry.timestamp),
+            symbol: coin.symbol,
+            openInterest: Number(currentValue.toFixed(2)),
+            openInterestChange,
+          };
+        });
+      const cleanedData = data.slice(1, -1);
+      return {
+        symbol: coin.symbol,
+        exchanges: coin.exchanges,
+        imageUrl: coin.imageUrl,
+        category: coin.category,
+        data: cleanedData,
+      };
     } catch (error) {
       console.error(`Error processing ${coin.symbol}:`, error);
       return { symbol: coin.symbol, data: [] };
