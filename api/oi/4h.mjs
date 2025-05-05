@@ -12,7 +12,7 @@ export const config = {
 // Main handler
 export default async function handler(request) {
   const timeframe = "h4";
-  const limit = 4;
+  const limit = 52;
   try {
     const { binancePerpCoins, bybitPerpCoins } = await fetchCoinsFromRedis();
 
