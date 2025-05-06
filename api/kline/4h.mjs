@@ -13,7 +13,7 @@ import { fetchBybitOi } from "../../functions/bybit/fetch-bybit-oi.mjs";
 import { mergeOiWithKline } from "../../functions/utility/merge-oi-with-kline.mjs";
 import { mergeSpotWithPerps } from "../../functions/utility/merge-spot-with-perps.mjs";
 import { mergeFrWithKline } from "../../functions/utility/merge-fr-with-kline.mjs";
-import { fixFundingRateChange } from "../../functions/utility/fix-fr-change.mjs";
+import { fixFrChange } from "../../functions/utility/fix-fr-change.mjs";
 import { validateRequestParams } from "../../functions/utility/validate-request-params.mjs";
 
 export const config = {
@@ -67,7 +67,7 @@ export default async function handler(request) {
     );
     data = mergeOiWithKline(data, [...binanceOi, ...bybitOi]);
     data = mergeFrWithKline(data, [...binanceFr, ...bybitFr]);
-    data = fixFundingRateChange(data);
+    data = fixFrChange(data);
 
     return new Response(JSON.stringify(data), {
       status: 200,

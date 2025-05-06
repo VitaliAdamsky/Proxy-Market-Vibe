@@ -3,7 +3,7 @@
  * @param {Array} data - Обработанные данные с `fundingRate` и `fundingRateChange`.
  * @returns {Array} - Исправленные данные.
  */
-export function fixFundingRateChange(data) {
+export function fixFrChange(data) {
   return data.map((coin) => {
     const { symbol, data: entries } = coin;
 
