@@ -3,6 +3,7 @@
 import { fetchBinanceFr } from "../../functions/binance/fetch-binance-fr.mjs";
 import { fetchBybitFr } from "../../functions/bybit/fetch-bybit-fr.mjs";
 import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
+import { groupFrByInterval } from "../../functions/utility/group-fr-by-interval.mjs";
 
 export const config = {
   runtime: "edge",
@@ -21,7 +22,8 @@ export default async function handler(request) {
       fetchBybitFr(bybitPerpCoins, limit),
     ]);
 
-    const merged = [...binanceFr, ...bybitFr];
+    let merged = [...binanceFr, ...bybitFr];
+    merged = groupFrByInterval(merged);
 
     return new Response(JSON.stringify(merged), {
       status: 200,

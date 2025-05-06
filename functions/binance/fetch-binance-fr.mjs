@@ -64,7 +64,6 @@ export const fetchBinanceFr = async (coins, limit) => {
         return {
           openTime: currentOpenTime,
           closeTime,
-          symbol: coin.symbol,
           fundingRate: currentRate,
           fundingRateChange,
         };

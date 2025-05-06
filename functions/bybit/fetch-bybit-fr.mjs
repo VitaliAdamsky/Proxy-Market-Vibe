@@ -54,13 +54,18 @@ export const fetchBybitFr = async (coins, limit) => {
         return {
           openTime,
           closeTime,
-          symbol: coin.symbol,
           fundingRate: currentRate,
           fundingRateChange,
         };
       });
 
-      return { symbol: coin.symbol, data };
+      return {
+        symbol: coin.symbol,
+        exchanges: coin.exchanges,
+        imageUrl: coin.imageUrl,
+        category: coin.category,
+        data,
+      };
     } catch (error) {
       console.error(`Error processing ${coin.symbol}:`, error);
       return { symbol: coin.symbol, data: [] };
