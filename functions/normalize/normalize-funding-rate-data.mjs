@@ -40,8 +40,6 @@ export function normalizeFundingRateData(marketDataArray) {
           fundingRate: frColor,
           fundingRateChange: frChangeColor,
         },
-        normalizedFundingRate: parseFloat(normalizedFr.toFixed(4)),
-        normalizedFundingRateChange: parseFloat(fundingRateChange.toFixed(4)),
       };
     });
 

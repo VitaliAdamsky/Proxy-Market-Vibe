@@ -37,7 +37,6 @@ export function normalizeOpenInterestData(marketDataArray) {
           openInterest: oiColor,
           openInterestChange: oiChangeColor,
         },
-        normalizedOpenInterest: Number(normalizedOi.toFixed(4)),
       };
     });
 
