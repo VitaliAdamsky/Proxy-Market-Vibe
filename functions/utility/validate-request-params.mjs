@@ -5,9 +5,12 @@ export function validateRequestParams(url) {
   const defaultLimitFr = 52;
 
   const urlObj = new URL(url);
+
   const timeframe = urlObj.searchParams.get("timeframe") || defaultTimeframe;
+
   const limitKline =
     parseInt(urlObj.searchParams.get("limitKline")) || defaultLimitKline;
+
   const limitFr =
     parseInt(urlObj.searchParams.get("limitFr")) || defaultLimitFr;
 

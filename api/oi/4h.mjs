@@ -1,8 +1,9 @@
 // api/fetch-klines.mjs
-import { calculateOpenInterestChanges } from "../../functions/utility/calculate-oi-changes.mjs";
+import { validateRequestParams } from "../../functions/utility/validate-request-params.mjs";
 import { fetchBinanceOi } from "../../functions/binance/fetch-binance-oi.mjs";
 import { fetchBybitOi } from "../../functions/bybit/fetch-bybit-oi.mjs";
 import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
+import { normalizeOpenInterestData } from "../../functions/normalize/normalize-open-interest.mjs";
 
 export const config = {
   runtime: "edge",
@@ -11,18 +12,25 @@ export const config = {
 
 // Main handler
 export default async function handler(request) {
-  const timeframe = "h4";
-  const limit = 52;
   try {
+    const params = validateRequestParams(request.url);
+
+    // 2. Если ошибка — возвращаем её
+    if (params instanceof Response) {
+      return params;
+    }
+
+    const { timeframe, limitKline } = params;
+
     const { binancePerpCoins, bybitPerpCoins } = await fetchCoinsFromRedis();
 
-    // Fetch and process data
-    const [binancePerps, bybitPerps] = await Promise.all([
-      fetchBinanceOi(binancePerpCoins, timeframe, limit),
-      fetchBybitOi(bybitPerpCoins, timeframe, limit),
+    const [binanceOi, bybitOi] = await Promise.all([
+      fetchBinanceOi(binancePerpCoins, timeframe, limitKline),
+      fetchBybitOi(bybitPerpCoins, timeframe, limitKline),
     ]);
 
-    return new Response(JSON.stringify([...binancePerps, ...bybitPerps]), {
+    const data = normalizeOpenInterestData([...binanceOi, ...bybitOi]);
+    return new Response(JSON.stringify(data), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

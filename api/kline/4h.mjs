@@ -31,14 +31,14 @@ export default async function handler(request) {
       return params;
     }
 
-    const { timeframe, limitKline, limitFr } = params;
+    const { timeframe, limitKline, limitFr, sliceStart, sliceEnd } = params;
 
     const {
       binancePerpCoins,
       binanceSpotCoins,
       bybitPerpCoins,
       bybitSpotCoins,
-    } = await fetchCoinsFromRedis();
+    } = await fetchCoinsFromRedis(sliceStart, sliceEnd);
 
     // 3. Fetch all data in parallel
     const [
