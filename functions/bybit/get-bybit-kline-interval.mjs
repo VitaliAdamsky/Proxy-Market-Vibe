@@ -10,7 +10,7 @@ export const getBybitKlineInterval = (timeframe) => {
     "6h": "360",
     "8h": "480",
     "12h": "720",
-    D: "D",
+    D: "1d",
   };
 
   if (!(timeframe in timeframes)) {

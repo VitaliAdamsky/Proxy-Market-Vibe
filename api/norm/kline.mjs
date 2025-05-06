@@ -27,7 +27,7 @@ export default async function handler(request) {
     }
 
     const { timeframe, limitKline } = params;
-
+    console.log("params", params);
     const {
       binancePerpCoins,
       binanceSpotCoins,
@@ -43,6 +43,8 @@ export default async function handler(request) {
         fetchBybitPerpKlines(bybitPerpCoins, timeframe, limitKline),
         fetchBybitSpotKlines(bybitSpotCoins, timeframe, limitKline),
       ]);
+
+    console.log("binancePerps", binancePerps.length);
 
     const expirationTime = calculateExpirationTime(
       binancePerps[0]?.data.at(-1).openTime,

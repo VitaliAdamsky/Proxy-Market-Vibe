@@ -10,7 +10,7 @@ export const getBinanceKlineInterval = (timeframe) => {
     "6h": "6h",
     "8h": "8h",
     "12h": "12h",
-    D: "D",
+    D: "1d",
   };
 
   if (!(timeframe in timeframes)) {
