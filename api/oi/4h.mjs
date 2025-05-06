@@ -30,6 +30,7 @@ export default async function handler(request) {
     ]);
 
     const data = normalizeOpenInterestData([...binanceOi, ...bybitOi]);
+
     return new Response(JSON.stringify(data), {
       status: 200,
       headers: {
