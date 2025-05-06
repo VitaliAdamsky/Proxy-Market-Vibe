@@ -3,7 +3,7 @@ import { validateRequestParams } from "../../functions/utility/validate-request-
 import { fetchBinanceOi } from "../../functions/binance/fetch-binance-oi.mjs";
 import { fetchBybitOi } from "../../functions/bybit/fetch-bybit-oi.mjs";
 import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
-import { normalizeOpenInterestData } from "../../functions/normalize/normalize-open-interest.mjs";
+import { normalizeOpenInterestData } from "../../functions/normalize/normalize-open-interest-data.mjs";
 
 export const config = {
   runtime: "edge",
