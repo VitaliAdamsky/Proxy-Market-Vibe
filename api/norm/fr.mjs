@@ -4,6 +4,7 @@ import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redi
 import { fetchBinanceFr } from "../../functions/binance/fetch-binance-fr.mjs";
 import { fetchBybitFr } from "../../functions/bybit/fetch-bybit-fr.mjs";
 import { normalizeFundingRateData } from "../../functions/normalize/normalize-funding-rate-data.mjs";
+import { calculateExpirationTime } from "../../functions/utility/calculate-expiration-time.mjs";
 
 export const config = {
   runtime: "edge",
