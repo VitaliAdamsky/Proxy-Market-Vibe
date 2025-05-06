@@ -30,13 +30,22 @@ export const fetchBinanceSpotKlines = async (coins, timeframe, limit) => {
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
-      const data = responseData.map((entry) => ({
-        symbol: coin.symbol,
-        openTime: parseFloat(entry[0]),
-        closePrice: parseFloat(entry[4]),
-      }));
+      const data = responseData
+        .sort((a, b) => a[0] - b[0])
+        .map((entry) => ({
+          symbol: coin.symbol,
+          openTime: parseFloat(entry[0]),
+          closePrice: parseFloat(entry[4]),
+        }));
 
-      return { symbol: coin.symbol, data };
+      const cleanedData = data.slice(1, -1);
+      return {
+        symbol: coin.symbol,
+        exchanges: coin.exchanges,
+        imageUrl: coin.imageUrl,
+        category: coin.category,
+        data: cleanedData,
+      };
     } catch (error) {
       console.error(`Error processing ${coin.symbol}:`, error);
       return { symbol: coin.symbol, data: [] };

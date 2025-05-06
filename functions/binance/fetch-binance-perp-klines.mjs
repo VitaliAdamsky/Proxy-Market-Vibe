@@ -30,42 +30,44 @@ export const fetchBinancePerpKlines = async (coins, timeframe, limit) => {
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
-      const data = responseData.map((entry) => {
-        // Calculate buyer ratio and delta volume
-        const baseVolume = parseFloat(entry[5]);
-        const takerBuyBase = parseFloat(entry[9]);
-        const takerBuyQuote = parseFloat(entry[10]);
-        const totalQuoteVolume = parseFloat(entry[7]);
+      const data = responseData
+        .sort((a, b) => a[0] - b[0])
+        .map((entry) => {
+          // Calculate buyer ratio and delta volume
+          const baseVolume = parseFloat(entry[5]);
+          const takerBuyBase = parseFloat(entry[9]);
+          const takerBuyQuote = parseFloat(entry[10]);
+          const totalQuoteVolume = parseFloat(entry[7]);
 
-        // Buyer ratio calculation (taker buys vs total volume)
-        const buyerRatio =
-          baseVolume > 0
-            ? Math.round((takerBuyBase / baseVolume) * 100 * 100) / 100 // Rounds to 2 decimals
-            : 0;
+          // Buyer ratio calculation (taker buys vs total volume)
+          const buyerRatio =
+            baseVolume > 0
+              ? Math.round((takerBuyBase / baseVolume) * 100 * 100) / 100 // Rounds to 2 decimals
+              : 0;
 
-        // Delta volume calculation (buyer USDT - seller USDT)
-        const sellerQuoteVolume = (totalQuoteVolume - takerBuyQuote).toFixed(2);
-        const volumeDelta = (takerBuyQuote - sellerQuoteVolume).toFixed(2);
+          // Delta volume calculation (buyer USDT - seller USDT)
+          const sellerQuoteVolume = (totalQuoteVolume - takerBuyQuote).toFixed(
+            2
+          );
+          const volumeDelta = (takerBuyQuote - sellerQuoteVolume).toFixed(2);
 
-        return {
-          symbol: coin.symbol,
-          exchanges: coin.exchanges,
-          imageUrl: coin.imageUrl,
-          category: coin.category,
-          openTime: parseFloat(entry[0]),
-          closeTime: parseFloat(entry[6]),
-          // openPrice: parseFloat(entry[1]),
-          // highPrice: parseFloat(entry[2]),
-          // lowPrice: parseFloat(entry[3]),
-          closePrice: parseFloat(entry[4]),
-          //baseVolume: parseFloat(baseVolume),
-          quoteVolume: parseFloat(totalQuoteVolume),
-          buyerRatio: parseFloat(buyerRatio),
-          volumeDelta: parseFloat(volumeDelta),
-        };
-      });
-
-      return { symbol: coin.symbol, data };
+          return {
+            openTime: parseFloat(entry[0]),
+            closeTime: parseFloat(entry[6]),
+            closePrice: parseFloat(entry[4]),
+            quoteVolume: parseFloat(totalQuoteVolume),
+            buyerRatio: parseFloat(buyerRatio),
+            volumeDelta: parseFloat(volumeDelta),
+          };
+        });
+      const cleanedData = data.slice(1, -1);
+      return {
+        symbol: coin.symbol,
+        exchanges: coin.exchanges,
+        imageUrl: coin.imageUrl,
+        category: coin.category,
+        data: cleanedData,
+      };
     } catch (error) {
       console.error(`Error processing ${coin.symbol}:`, error);
       return { symbol: coin.symbol, data: [] };

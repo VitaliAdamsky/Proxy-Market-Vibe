@@ -4,14 +4,17 @@ import { fetchBinancePerpKlines } from "../../functions/binance/fetch-binance-pe
 import { fetchBinanceSpotKlines } from "../../functions/binance/fetch-binance-spot-klines.mjs";
 import { fetchBybitPerpKlines } from "../../functions/bybit/fetch-bybit-perp-klines.mjs";
 import { fetchBybitSpotKlines } from "../../functions/bybit/fetch-bybit-spot-klines.mjs";
-import { mergeKlineData } from "../../functions/utility/merge-kline-data.mjs";
+
 import { fetchBinanceFr } from "../../functions/binance/fetch-binance-fr.mjs";
 import { fetchBybitFr } from "../../functions/bybit/fetch-bybit-fr.mjs";
 import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
 import { fetchBinanceOi } from "../../functions/binance/fetch-binance-oi.mjs";
 import { fetchBybitOi } from "../../functions/bybit/fetch-bybit-oi.mjs";
-import { addFrData } from "../../functions/basis/add-fr-data.mjs";
-import { addOiData } from "../../functions/basis/add-oi-data.mjs";
+import { mergeOiWithKline } from "../../functions/utility/merge-oi-with-kline.mjs";
+import { mergeSpotWithPerps } from "../../functions/utility/merge-spot-with-perps.mjs";
+import { mergeFrWithKline } from "../../functions/utility/merge-fr-with-kline.mjs";
+import { fixFundingRateChange } from "../../functions/utility/fix-fr-change.mjs";
+import { validateRequestParams } from "../../functions/utility/validate-request-params.mjs";
 
 export const config = {
   runtime: "edge",
@@ -20,9 +23,15 @@ export const config = {
 
 export default async function handler(request) {
   try {
-    const timeframe = "h4";
-    const limitKline = 51;
-    const limitFr = 52;
+    // 1. Валидация параметров
+    const params = validateRequestParams(request.url);
+
+    // 2. Если ошибка — возвращаем её
+    if (params instanceof Response) {
+      return params;
+    }
+
+    const { timeframe, limitKline, limitFr } = params;
 
     const {
       binancePerpCoins,
@@ -52,20 +61,15 @@ export default async function handler(request) {
       fetchBybitOi(bybitPerpCoins, timeframe, limitKline),
     ]);
 
-    // 4. Merge data
-
-    const mergedKlines = mergeKlineData(
+    let data = mergeSpotWithPerps(
       [...binancePerps, ...bybitPerps],
       [...binanceSpot, ...bybitSpot]
     );
-    const mergedFr = [...binanceFr, ...bybitFr];
-    const mergedOi = [...binanceOi, ...bybitOi];
+    data = mergeOiWithKline(data, [...binanceOi, ...bybitOi]);
+    data = mergeFrWithKline(data, [...binanceFr, ...bybitFr]);
+    data = fixFundingRateChange(data);
 
-    let processed;
-    processed = addFrData(mergedKlines, mergedFr);
-    processed = addOiData(processed, mergedOi);
-
-    return new Response(JSON.stringify(processed), {
+    return new Response(JSON.stringify(data), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

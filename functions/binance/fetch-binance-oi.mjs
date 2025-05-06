@@ -18,7 +18,6 @@ export const fetchBinanceOi = async (coins, timeframe, limit) => {
       headers.set("Referer", "https://www.binance.com/");
 
       const url = binanceOiUrl(coin.symbol, binanceInterval, limit);
-
       const response = await fetch(url, { headers });
       const responseData = await response.json();
 
@@ -30,37 +29,50 @@ export const fetchBinanceOi = async (coins, timeframe, limit) => {
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
-      const data = responseData
-        .sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
-        .map((entry, index, arr) => {
-          const currentValue = Number(entry.sumOpenInterestValue);
+      // Сортировка по времени
+      const sortedData = responseData.sort(
+        (a, b) => Number(a.timestamp) - Number(b.timestamp)
+      );
 
-          // Calculate open interest change
-          const openInterestChange =
-            index > 0
-              ? Number(
-                  (
-                    ((currentValue -
-                      Number(arr[index - 1].sumOpenInterestValue)) /
-                      Math.abs(Number(arr[index - 1].sumOpenInterestValue))) *
-                    100
-                  ).toFixed(2)
-                )
-              : null;
+      // Обработка данных
+      const data = sortedData.map((entry, index, arr) => {
+        const currentValue = Number(entry.sumOpenInterestValue);
 
-          return {
-            openTime: Number(entry.timestamp),
-            symbol: coin.symbol,
-            openInterest: Number(currentValue.toFixed(2)),
-            openInterestChange,
-          };
-        });
+        // Вычисление изменения OI
+        let openInterestChange = null;
+
+        if (index > 0) {
+          const prevValue = Number(arr[index - 1].sumOpenInterestValue);
+
+          if (prevValue !== 0) {
+            openInterestChange = Number(
+              (
+                ((currentValue - prevValue) / Math.abs(prevValue)) *
+                100
+              ).toFixed(2)
+            );
+          } else {
+            openInterestChange = currentValue !== 0 ? 100 : 0;
+          }
+        }
+
+        return {
+          openTime: Number(entry.timestamp),
+          symbol: coin.symbol,
+          openInterest: Number(currentValue.toFixed(2)),
+          openInterestChange,
+        };
+      });
+
+      // Удаляем только первый элемент (где openInterestChange = null)
       const cleanedData = data.slice(1, -1);
+
+      // Возвращаем полный объект с защитой от отсутствия полей
       return {
         symbol: coin.symbol,
-        exchanges: coin.exchanges,
-        imageUrl: coin.imageUrl,
-        category: coin.category,
+        exchanges: coin.exchanges || [],
+        imageUrl: coin.imageUrl || "",
+        category: coin.category || "",
         data: cleanedData,
       };
     } catch (error) {

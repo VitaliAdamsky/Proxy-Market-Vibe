@@ -22,7 +22,7 @@ export const fetchBybitPerpKlines = async (coins, timeframe, limit) => {
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
-      const rawEntries = responseData.result.list;
+      const rawEntries = responseData.result.list.sort((a, b) => a[0] - b[0]);
       const data = [];
 
       for (const entry of rawEntries) {
@@ -31,20 +31,19 @@ export const fetchBybitPerpKlines = async (coins, timeframe, limit) => {
         data.push({
           openTime: Number(entry[0]),
           closeTime: calculateCloseTime(Number(entry[0]), intervalMs),
-          symbol: coin.symbol,
-          category: coin.category || "unknown",
-          exchanges: coin.exchanges || [],
-          imageUrl: coin.imageUrl || "assets/img/noname.png",
-          // openPrice: Number(entry[1]),
-          // highPrice: Number(entry[2]),
-          // lowPrice: Number(entry[3]),
           closePrice: Number(entry[4]),
-          //baseVolume: Number(entry[5]),
           quoteVolume: Number(entry[6]),
         });
       }
 
-      return { symbol: coin.symbol, data };
+      const cleanedData = data.slice(1, -1);
+      return {
+        symbol: coin.symbol,
+        category: coin.category || "unknown",
+        exchanges: coin.exchanges || [],
+        imageUrl: coin.imageUrl || "assets/img/noname.png",
+        data: cleanedData,
+      };
     } catch (error) {
       console.error(`Error processing ${coin.symbol}:`, error);
       return { symbol: coin.symbol, data: [] };

@@ -1,5 +1,7 @@
 import { bingXFrUrl } from "./bingx-fr-url.mjs";
 
+import { calcChange } from "../utility/calculate-change.mjs";
+
 export const fetchBingXFr = async (coins, limit) => {
   const promises = coins.map(async (coin) => {
     try {
@@ -12,41 +14,37 @@ export const fetchBingXFr = async (coins, limit) => {
         throw new Error(`Invalid response for ${coin.symbol}`);
       }
 
-      // Sort entries chronologically
+      // Извлечение и нормализация данных
       const rawEntries = responseData.data
         .map((entry) => ({
-          ...entry,
           fundingTime: Number(entry.fundingTime),
+          fundingRate: Number(entry.fundingRate),
         }))
-        .sort((a, b) => a.fundingTime - b.fundingTime);
+        .sort((a, b) => a.fundingTime - b.fundingTime); // Сортировка по возрастанию времени
 
-      // Calculate actual interval from data
+      // Вычисление базового интервала
       const baseInterval =
         rawEntries.length >= 2
           ? rawEntries[1].fundingTime - rawEntries[0].fundingTime
           : 8 * 3600 * 1000;
 
+      // Обработка данных
       const data = rawEntries.map((entry, index, arr) => {
         const currentOpenTime = entry.fundingTime;
-        const currentRate = Number(entry.fundingRate);
-
-        // Calculate closeTime using consistent interval
+        const currentRate = entry.fundingRate;
         const closeTime = currentOpenTime + baseInterval - 1;
 
-        // Validate time sequence
+        // Проверка временной последовательности
         if (closeTime <= currentOpenTime) {
-          throw new Error(
-            `Invalid closeTime for ${coin.symbol} at ${currentOpenTime}`
-          );
+          throw new Error(`Invalid timestamps for ${coin.symbol}`);
         }
 
-        // Calculate rate change from next entry (chronological order)
-        const fundingRateChange =
-          index < arr.length - 1
-            ? ((arr[index + 1].fundingRate - currentRate) /
-                Math.abs(currentRate)) *
-              100
-            : null;
+        // Вычисление изменения fundingRate
+        let fundingRateChange = null;
+        if (index > 0) {
+          const prevRate = arr[index - 1].fundingRate;
+          fundingRateChange = calcChange(currentRate, prevRate);
+        }
 
         return {
           openTime: currentOpenTime,
@@ -57,7 +55,13 @@ export const fetchBingXFr = async (coins, limit) => {
         };
       });
 
-      return { symbol: coin.symbol, data };
+      return {
+        symbol: coin.symbol,
+        exchanges: coin.exchanges || [],
+        imageUrl: coin.imageUrl || "",
+        category: coin.category || "",
+        data,
+      };
     } catch (error) {
       console.error(`Error processing ${coin.symbol}:`, error);
       return { symbol: coin.symbol, data: [] };
