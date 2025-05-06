@@ -34,6 +34,10 @@ export function mergeSpotWithPerps(perps, spot) {
           currentEntry.closePrice,
           prevEntry?.closePrice
         ),
+        buyerRatioChange: calcChange(
+          currentEntry.buyerRatio,
+          prevEntry?.buyerRatio
+        ),
       };
 
       // Получаем спотовую цену, если доступна
