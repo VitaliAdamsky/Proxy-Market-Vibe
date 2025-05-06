@@ -29,15 +29,23 @@ export default async function handler(request) {
       fetchBybitFr(bybitPerpCoins, limitKline),
     ]);
 
+    const expirationTime = calculateExpirationTime(
+      binanceFr[0]?.data.at(-1).openTime,
+      "2h"
+    );
+
     const data = normalizeFundingRateData([...binanceFr, ...bybitFr]);
 
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "max-age=60, stale-while-revalidate=30",
-      },
-    });
+    return new Response(
+      JSON.stringify({ timeframe: "2h", expirationTime, data }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "max-age=60, stale-while-revalidate=30",
+        },
+      }
+    );
   } catch (error) {
     console.error("Handler error:", error);
     return new Response(
