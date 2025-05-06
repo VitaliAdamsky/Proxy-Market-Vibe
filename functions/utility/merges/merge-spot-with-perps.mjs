@@ -1,4 +1,4 @@
-import { calcChange } from "./calculate-change.mjs";
+import { calcChange } from "../calculate-change.mjs";
 
 export function mergeSpotWithPerps(perps, spot) {
   // 1. Создаём карту спотовых данных по символу и openTime

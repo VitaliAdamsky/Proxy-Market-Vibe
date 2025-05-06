@@ -1,10 +1,10 @@
 export const getBybitOiInterval = (timeframe) => {
   const timeframes = {
-    m5: "5min",
-    m15: "15min",
-    m30: "30min",
-    h1: "1h",
-    h4: "4h",
+    "5m": "5min",
+    "15m": "15min",
+    "30m": "30min",
+    "1h": "1h",
+    "4h": "4h",
     D: "1d",
   };
 

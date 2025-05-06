@@ -1,4 +1,4 @@
-import { calcChange } from "./calculate-change.mjs";
+import { calcChange } from "../calculate-change.mjs";
 
 /**
  * Добавляет `fundingRate` и `fundingRateChange` к `kline`-данным.

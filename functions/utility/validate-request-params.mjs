@@ -1,6 +1,17 @@
 export function validateRequestParams(url) {
-  const supportedTimeframes = ["h1", "h4", "h6", "h8", "d1"];
-  const defaultTimeframe = "h4";
+  const supportedTimeframes = [
+    "1m",
+    "5m",
+    "15m",
+    "30m",
+    "1h",
+    "4h",
+    "6h",
+    "8h",
+    "12h",
+    "D",
+  ];
+  const defaultTimeframe = "4h";
   const defaultLimitKline = 52;
   const defaultLimitFr = 52;
 

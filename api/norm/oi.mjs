@@ -5,6 +5,8 @@ import { fetchBybitOi } from "../../functions/bybit/fetch-bybit-oi.mjs";
 import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
 import { normalizeOpenInterestData } from "../../functions/normalize/normalize-open-interest-data.mjs";
 
+import { calculateExpirationTime } from "../../functions/utility/calculate-expiration-time.mjs";
+
 export const config = {
   runtime: "edge",
   regions: ["arn1"],
@@ -29,9 +31,16 @@ export default async function handler(request) {
       fetchBybitOi(bybitPerpCoins, timeframe, limitKline),
     ]);
 
+    const expirationTime = calculateExpirationTime(
+      binanceOi[0]?.data.at(-1).openTime,
+      timeframe
+    );
+
+    console.log("expirationTime", expirationTime);
+
     const data = normalizeOpenInterestData([...binanceOi, ...bybitOi]);
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify({ timeframe, expirationTime, data }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
-import { noBinanceSpotData } from "../utility/no-binance-spot-data.mjs";
-import { noBybitSpotData } from "../utility/no-bybit-spot-data.mjs";
+import { noBinanceSpotData } from "../utility/no-data/no-binance-spot-data.mjs";
+import { noBybitSpotData } from "../utility/no-data/no-bybit-spot-data.mjs";
 
 export async function fetchCoinsFromRedis() {
   // 1. Get coins from Redis
