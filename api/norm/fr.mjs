@@ -36,7 +36,7 @@ export default async function handler(request) {
     );
 
     const data = normalizeFundingRateData([...binanceFr, ...bybitFr]);
-
+    console.log(data);
     return new Response(data, {
       status: 200,
       headers: {
