@@ -9,7 +9,7 @@ import { calculateExpirationTime } from "../../functions/utility/calculate-expir
 
 export const config = {
   runtime: "edge",
-  regions: ["arn1"],
+  regions: ["cdg1"],
 };
 
 // Main handler

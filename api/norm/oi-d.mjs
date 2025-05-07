@@ -8,7 +8,7 @@ import { fetchBybitDominantCoinsFromRedis } from "../../functions/coins/fetch-by
 
 export const config = {
   runtime: "edge",
-  regions: ["arn1"],
+  regions: ["fra1"],
 };
 
 // Main handler
