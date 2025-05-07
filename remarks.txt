@@ -2,8 +2,9 @@ arn1	eu-north-1	Stockholm, Sweden
 cdg1	eu-west-3	Paris, France 
 dub1	eu-west-1	Dublin, Ireland
 fra1	eu-central-1	Frankfurt, Germany
-bom1	ap-south-1	Mumbai, India
 lhr1	eu-west-2	London, United Kingdom
+
+bom1	ap-south-1	Mumbai, India
 sin1	ap-southeast-1	Singapore
 cle1	us-east-2	Cleveland, USA
 cpt1	af-south-1	Cape Town, South Africa

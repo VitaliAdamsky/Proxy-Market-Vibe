@@ -1,9 +1,10 @@
 // api/fetch-klines.mjs
 import { validateRequestParams } from "../../functions/utility/validate-request-params.mjs";
+import { fetchBinanceOi } from "../../functions/binance/fetch-binance-oi.mjs";
+import { fetchBybitOi } from "../../functions/bybit/fetch-bybit-oi.mjs";
 import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
-import { fetchBinanceFr } from "../../functions/binance/fetch-binance-fr.mjs";
-import { fetchBybitFr } from "../../functions/bybit/fetch-bybit-fr.mjs";
-import { normalizeFundingRateData } from "../../functions/normalize/normalize-funding-rate-data.mjs";
+import { normalizeOpenInterestData } from "../../functions/normalize/normalize-open-interest-data.mjs";
+
 import { calculateExpirationTime } from "../../functions/utility/calculate-expiration-time.mjs";
 
 export const config = {
@@ -21,32 +22,29 @@ export default async function handler(request) {
       return params;
     }
 
-    const { limitKline } = params;
+    const { timeframe, limitKline } = params;
 
     const { binancePerpCoins, bybitPerpCoins } = await fetchCoinsFromRedis();
 
-    const [binanceFr, bybitFr] = await Promise.all([
-      fetchBinanceFr(binancePerpCoins, limitKline),
-      fetchBybitFr(bybitPerpCoins, limitKline),
+    const [binanceOi, bybitOi] = await Promise.all([
+      fetchBinanceOi(binancePerpCoins, timeframe, limitKline),
+      fetchBybitOi(bybitPerpCoins, timeframe, limitKline),
     ]);
 
     const expirationTime = calculateExpirationTime(
-      binanceFr[0]?.data.at(-1).openTime,
-      "2h"
+      binanceOi[0]?.data.at(-1).openTime,
+      timeframe
     );
 
-    const data = normalizeFundingRateData([...binanceFr, ...bybitFr]);
+    const data = normalizeOpenInterestData([...binanceOi, ...bybitOi]);
 
-    return new Response(
-      JSON.stringify({ timeframe: "2h", expirationTime, data }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "max-age=60, stale-while-revalidate=30",
-        },
-      }
-    );
+    return new Response(JSON.stringify({ timeframe, expirationTime, data }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "max-age=60, stale-while-revalidate=30",
+      },
+    });
   } catch (error) {
     console.error("Handler error:", error);
     return new Response(
