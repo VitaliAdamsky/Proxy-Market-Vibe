@@ -36,8 +36,6 @@ export default async function handler(request) {
       timeframe
     );
 
-    console.log("expirationTime", expirationTime);
-
     const data = normalizeOpenInterestData([...binanceOi, ...bybitOi]);
 
     return new Response(JSON.stringify({ timeframe, expirationTime, data }), {
