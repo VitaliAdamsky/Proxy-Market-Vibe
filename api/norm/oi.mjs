@@ -2,14 +2,15 @@
 import { validateRequestParams } from "../../functions/utility/validate-request-params.mjs";
 import { fetchBinanceOi } from "../../functions/binance/fetch-binance-oi.mjs";
 import { fetchBybitOi } from "../../functions/bybit/fetch-bybit-oi.mjs";
-import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
+
 import { normalizeOpenInterestData } from "../../functions/normalize/normalize-open-interest-data.mjs";
 
 import { calculateExpirationTime } from "../../functions/utility/calculate-expiration-time.mjs";
+import { fetchBinanceDominantCoinsFromRedis } from "../../functions/coins/fetch-binance-dominant-coins-from-redis.mjs";
 
 export const config = {
   runtime: "edge",
-  regions: ["cdg1"],
+  regions: ["lhr1"],
 };
 
 // Main handler
@@ -22,13 +23,14 @@ export default async function handler(request) {
       return params;
     }
 
-    const { timeframe, limitKline } = params;
+    const { timeframe, limit } = params;
 
-    const { binancePerpCoins, bybitPerpCoins } = await fetchCoinsFromRedis();
+    const { binancePerpCoins, bybitPerpCoins } =
+      await fetchBinanceDominantCoinsFromRedis();
 
     const [binanceOi, bybitOi] = await Promise.all([
-      fetchBinanceOi(binancePerpCoins, timeframe, limitKline),
-      fetchBybitOi(bybitPerpCoins, timeframe, limitKline),
+      fetchBinanceOi(binancePerpCoins, timeframe, limit),
+      fetchBybitOi(bybitPerpCoins, timeframe, limit),
     ]);
 
     const expirationTime = calculateExpirationTime(

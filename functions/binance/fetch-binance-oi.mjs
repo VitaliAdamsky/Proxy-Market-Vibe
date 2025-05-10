@@ -19,6 +19,11 @@ export const fetchBinanceOi = async (coins, timeframe, limit) => {
 
       const url = binanceOiUrl(coin.symbol, binanceInterval, limit);
       const response = await fetch(url, { headers });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error fetching ${coin.symbol}:`, errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const responseData = await response.json();
 
       if (!Array.isArray(responseData)) {

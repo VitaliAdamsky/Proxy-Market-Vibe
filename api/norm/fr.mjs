@@ -1,10 +1,11 @@
 // api/fetch-klines.mjs
 import { validateRequestParams } from "../../functions/utility/validate-request-params.mjs";
-import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
+
 import { fetchBinanceFr } from "../../functions/binance/fetch-binance-fr.mjs";
 import { fetchBybitFr } from "../../functions/bybit/fetch-bybit-fr.mjs";
 import { normalizeFundingRateData } from "../../functions/normalize/normalize-funding-rate-data.mjs";
 import { calculateExpirationTime } from "../../functions/utility/calculate-expiration-time.mjs";
+import { fetchBinanceDominantCoinsFromRedis } from "../../functions/coins/fetch-binance-dominant-coins-from-redis.mjs";
 
 export const config = {
   runtime: "edge",
@@ -21,21 +22,22 @@ export default async function handler(request) {
       return params;
     }
 
-    const { limitKline } = params;
+    const { limit } = params;
 
-    const { binancePerpCoins, bybitPerpCoins } = await fetchCoinsFromRedis();
+    const { binancePerpCoins, bybitPerpCoins } =
+      await fetchBinanceDominantCoinsFromRedis();
 
-    const [binanceFr, bybitFr] = await Promise.all([
-      fetchBinanceFr(binancePerpCoins, limitKline),
-      fetchBybitFr(bybitPerpCoins, limitKline),
+    const [bybitFr, binanceFr] = await Promise.all([
+      fetchBybitFr(bybitPerpCoins, limit),
+      fetchBinanceFr(binancePerpCoins, limit),
     ]);
 
     const expirationTime = calculateExpirationTime(
-      binanceFr[0]?.data.at(-1).openTime,
+      bybitFr[0]?.data.at(-1).openTime,
       "2h"
     );
 
-    const data = normalizeFundingRateData([...binanceFr, ...bybitFr]);
+    const data = normalizeFundingRateData([...bybitFr, ...binanceFr]);
 
     return new Response(
       JSON.stringify({ timeframe: "2h", expirationTime, data }),

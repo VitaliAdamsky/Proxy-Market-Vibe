@@ -5,11 +5,11 @@ import { fetchBinanceSpotKlines } from "../../functions/binance/fetch-binance-sp
 import { fetchBybitPerpKlines } from "../../functions/bybit/fetch-bybit-perp-klines.mjs";
 import { fetchBybitSpotKlines } from "../../functions/bybit/fetch-bybit-spot-klines.mjs";
 
-import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
 import { mergeSpotWithPerps } from "../../functions/utility/merges/merge-spot-with-perps.mjs";
 import { validateRequestParams } from "../../functions/utility/validate-request-params.mjs";
 import { normalizeKlineData } from "../../functions/normalize/normalize-kline-data.mjs";
 import { calculateExpirationTime } from "../../functions/utility/calculate-expiration-time.mjs";
+import { fetchBinanceDominantCoinsFromRedis } from "../../functions/coins/fetch-binance-dominant-coins-from-redis.mjs";
 
 export const config = {
   runtime: "edge",
@@ -26,22 +26,22 @@ export default async function handler(request) {
       return params;
     }
 
-    const { timeframe, limitKline } = params;
+    const { timeframe, limit } = params;
 
     const {
       binancePerpCoins,
       binanceSpotCoins,
       bybitPerpCoins,
       bybitSpotCoins,
-    } = await fetchCoinsFromRedis();
+    } = await fetchBinanceDominantCoinsFromRedis();
 
     // 3. Fetch all data in parallel
     const [binancePerps, binanceSpot, bybitPerps, bybitSpot] =
       await Promise.all([
-        fetchBinancePerpKlines(binancePerpCoins, timeframe, limitKline),
-        fetchBinanceSpotKlines(binanceSpotCoins, timeframe, limitKline),
-        fetchBybitPerpKlines(bybitPerpCoins, timeframe, limitKline),
-        fetchBybitSpotKlines(bybitSpotCoins, timeframe, limitKline),
+        fetchBinancePerpKlines(binancePerpCoins, timeframe, limit),
+        fetchBinanceSpotKlines(binanceSpotCoins, timeframe, limit),
+        fetchBybitPerpKlines(bybitPerpCoins, timeframe, limit),
+        fetchBybitSpotKlines(bybitSpotCoins, timeframe, limit),
       ]);
 
     const expirationTime = calculateExpirationTime(

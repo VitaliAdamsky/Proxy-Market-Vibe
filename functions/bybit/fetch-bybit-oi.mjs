@@ -8,6 +8,13 @@ export const fetchBybitOi = async (coins, timeframe, limit) => {
     try {
       const url = bybitOiUrl(coin.symbol, bybitInterval, limit);
       const response = await fetch(url);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error fetching ${coin.symbol}:`, errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const responseData = await response.json();
 
       if (

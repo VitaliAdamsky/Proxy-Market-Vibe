@@ -5,6 +5,11 @@ export const fetchBybitFr = async (coins, limit) => {
     try {
       const url = bybitFrUrl(coin.symbol, limit);
       const response = await fetch(url);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error fetching ${coin.symbol}:`, errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const responseData = await response.json();
 
       if (

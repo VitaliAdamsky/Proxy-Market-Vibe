@@ -2,7 +2,7 @@ import { Redis } from "@upstash/redis";
 import { noBinanceSpotData } from "../utility/no-data/no-binance-spot-data.mjs";
 import { noBybitSpotData } from "../utility/no-data/no-bybit-spot-data.mjs";
 
-export async function fetchCoinsFromRedis() {
+export async function fetchBinanceDominantCoinsFromRedis() {
   // 1. Get coins from Redis
   const redis = new Redis({
     url: process.env.KV_REST_API_URL,
@@ -12,7 +12,6 @@ export async function fetchCoinsFromRedis() {
   const rawCoins = await redis.get("coins");
   const coins = Array.isArray(rawCoins) ? rawCoins : [];
 
-  // 2. Filter coins
   const binancePerpCoins = coins.filter((c) =>
     c?.exchanges?.includes?.("Binance")
   );
@@ -23,6 +22,7 @@ export async function fetchCoinsFromRedis() {
       !noBinanceSpotData.includes(c.symbol)
   );
 
+  // 2. Filter coins
   const bybitPerpCoins = coins.filter(
     (c) =>
       c?.exchanges?.includes?.("Bybit") && !c?.exchanges?.includes?.("Binance")
@@ -36,9 +36,9 @@ export async function fetchCoinsFromRedis() {
   );
 
   return {
-    binancePerpCoins,
-    binanceSpotCoins,
     bybitPerpCoins,
     bybitSpotCoins,
+    binancePerpCoins,
+    binanceSpotCoins,
   };
 }

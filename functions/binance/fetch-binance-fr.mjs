@@ -15,7 +15,13 @@ export const fetchBinanceFr = async (coins, limit) => {
 
       const url = binanceFrUrl(coin.symbol, limit);
       const response = await fetch(url, { headers });
-      const responseData = await response.text();
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error fetching ${coin.symbol}:`, errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const responseData = await response.json();
 
       if (!Array.isArray(responseData)) {
         console.error(`Invalid response for ${coin.symbol}:`, responseData);

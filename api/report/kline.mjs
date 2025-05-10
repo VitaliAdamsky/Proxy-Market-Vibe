@@ -7,7 +7,7 @@ import { fetchBybitSpotKlines } from "../../functions/bybit/fetch-bybit-spot-kli
 
 import { fetchBinanceFr } from "../../functions/binance/fetch-binance-fr.mjs";
 import { fetchBybitFr } from "../../functions/bybit/fetch-bybit-fr.mjs";
-import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
+
 import { fetchBinanceOi } from "../../functions/binance/fetch-binance-oi.mjs";
 import { fetchBybitOi } from "../../functions/bybit/fetch-bybit-oi.mjs";
 import { mergeOiWithKline } from "../../functions/utility/merges/merge-oi-with-kline.mjs";
@@ -15,6 +15,7 @@ import { mergeSpotWithPerps } from "../../functions/utility/merges/merge-spot-wi
 import { mergeFrWithKline } from "../../functions/utility/merges/merge-fr-with-kline.mjs";
 import { fixFrChange } from "../../functions/utility/fix-fr-change.mjs";
 import { validateRequestParams } from "../../functions/utility/validate-request-params.mjs";
+import { fetchBinanceDominantCoinsFromRedis } from "../../functions/coins/fetch-binance-dominant-coins-from-redis.mjs";
 
 export const config = {
   runtime: "edge",
@@ -31,14 +32,14 @@ export default async function handler(request) {
       return params;
     }
 
-    const { timeframe, limitKline, limitFr } = params;
+    const { timeframe, limit } = params;
 
     const {
       binancePerpCoins,
       binanceSpotCoins,
       bybitPerpCoins,
       bybitSpotCoins,
-    } = await fetchCoinsFromRedis();
+    } = await fetchBinanceDominantCoinsFromRedis();
 
     // 3. Fetch all data in parallel
     const [
@@ -51,14 +52,14 @@ export default async function handler(request) {
       binanceOi,
       bybitOi,
     ] = await Promise.all([
-      fetchBinancePerpKlines(binancePerpCoins, timeframe, limitKline),
-      fetchBinanceSpotKlines(binanceSpotCoins, timeframe, limitKline),
-      fetchBybitPerpKlines(bybitPerpCoins, timeframe, limitKline),
-      fetchBybitSpotKlines(bybitSpotCoins, timeframe, limitKline),
-      fetchBinanceFr(binancePerpCoins, limitFr),
-      fetchBybitFr(bybitPerpCoins, limitFr),
-      fetchBinanceOi(binancePerpCoins, timeframe, limitKline),
-      fetchBybitOi(bybitPerpCoins, timeframe, limitKline),
+      fetchBinancePerpKlines(binancePerpCoins, timeframe, limit),
+      fetchBinanceSpotKlines(binanceSpotCoins, timeframe, limit),
+      fetchBybitPerpKlines(bybitPerpCoins, timeframe, limit),
+      fetchBybitSpotKlines(bybitSpotCoins, timeframe, limit),
+      fetchBinanceFr(binancePerpCoins, limit),
+      fetchBybitFr(bybitPerpCoins, limit),
+      fetchBinanceOi(binancePerpCoins, timeframe, limit),
+      fetchBybitOi(bybitPerpCoins, timeframe, limit),
     ]);
 
     let data = mergeSpotWithPerps(

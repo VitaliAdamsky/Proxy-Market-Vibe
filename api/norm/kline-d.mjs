@@ -5,15 +5,16 @@ import { fetchBinanceSpotKlines } from "../../functions/binance/fetch-binance-sp
 import { fetchBybitPerpKlines } from "../../functions/bybit/fetch-bybit-perp-klines.mjs";
 import { fetchBybitSpotKlines } from "../../functions/bybit/fetch-bybit-spot-klines.mjs";
 
-import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
 import { mergeSpotWithPerps } from "../../functions/utility/merges/merge-spot-with-perps.mjs";
 import { validateRequestParams } from "../../functions/utility/validate-request-params.mjs";
 import { normalizeKlineData } from "../../functions/normalize/normalize-kline-data.mjs";
 import { calculateExpirationTime } from "../../functions/utility/calculate-expiration-time.mjs";
+import { fetchBybitDominantCoinsFromRedis } from "../../functions/coins/fetch-bybit-dominant-coins-from-redis.mjs";
+import { fetchBinanceDominantCoinsFromRedis } from "../../functions/coins/fetch-binance-dominant-coins-from-redis.mjs";
 
 export const config = {
   runtime: "edge",
-  regions: ["fra1"],
+  regions: ["lhr1"],
 };
 
 export default async function handler(request) {
@@ -26,23 +27,27 @@ export default async function handler(request) {
       return params;
     }
 
-    const { timeframe, limitKline } = params;
+    const { limit } = params;
+    const timeframe = "D";
 
     const {
       binancePerpCoins,
       binanceSpotCoins,
       bybitPerpCoins,
       bybitSpotCoins,
-    } = await fetchCoinsFromRedis();
+    } = await fetchBinanceDominantCoinsFromRedis();
 
     // 3. Fetch all data in parallel
     const [binancePerps, binanceSpot, bybitPerps, bybitSpot] =
       await Promise.all([
-        fetchBinancePerpKlines(binancePerpCoins, timeframe, limitKline),
-        fetchBinanceSpotKlines(binanceSpotCoins, timeframe, limitKline),
-        fetchBybitPerpKlines(bybitPerpCoins, timeframe, limitKline),
-        fetchBybitSpotKlines(bybitSpotCoins, timeframe, limitKline),
+        fetchBinancePerpKlines(binancePerpCoins, timeframe, limit),
+        fetchBinanceSpotKlines(binanceSpotCoins, timeframe, limit),
+        fetchBybitPerpKlines(bybitPerpCoins, timeframe, limit),
+        fetchBybitSpotKlines(bybitSpotCoins, timeframe, limit),
       ]);
+
+    console.log("BybitPerps", bybitPerps.length);
+    console.log("BybitSpot", bybitSpot.length);
 
     const expirationTime = calculateExpirationTime(
       binancePerps[0]?.data.at(-1).openTime,
